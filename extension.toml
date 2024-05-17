@@ -1,0 +1,15 @@
+id = "neocmake"
+name = "NeoCMake"
+version = "0.0.1"
+schema_version = 1
+authors = ["Sorochan Ilya <sorochanilyav@gmail.com>"]
+description = "CMake grammar and lsp with neocmakelsp"
+repository = "https://github.com/k0tran/zed_neocmake"
+
+[language_servers.cmake]
+name = "neocmakelsp"
+language = "CMake"
+
+[grammars.cmake]
+repository = "https://github.com/uyha/tree-sitter-cmake"
+commit = "47564fb0045710aaaa26b4972f4f986297a78280"      # v0.3.0

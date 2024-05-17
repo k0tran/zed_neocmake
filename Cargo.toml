@@ -1,0 +1,12 @@
+[package]
+name = "zed_neocmake"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+zed_extension_api = "0.0.6"
+
+[lib]
+path = "src/cmake.rs"
+crate-type = ["cdylib"]
