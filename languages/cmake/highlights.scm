@@ -15,6 +15,8 @@
 ["ENV" "CACHE"] @string.special.symbol
 ["$" "{" "}" "<" ">"] @punctuation
 ["(" ")"] @punctuation.bracket
+(escape_sequence) @string.escape
+["\"" ";"] @punctuation.delimiter
 
 [
   (function)
