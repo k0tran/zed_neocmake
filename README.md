@@ -8,9 +8,9 @@ The tree-sitter grammar is taken from [helix repo](https://github.com/helix-edit
 For making clangd and cmake work together do the following:
 
 1. Add `set(CMAKE_EXPORT_COMPILE_COMMANDS ON)` at the top of the `CMakeLists.txt` (somewhere below `project`);
-2. Reconfigure cmake project. If everything is correct there should be `compile_commands.json` file under build directory;
-3. Go to Zed's `settings.json`: Ctrl+Shift+P `open local settings`;
-4. Find `lsp` section. Inside it paste the following (replace `build` with your build directory name):
+2. Reconfigure cmake project. If everything is correct there should be `compile_commands.json` file under build directory. I also advise using `CXX=clang` for better compatibility with clangd;
+3. Go to Zed's `settings.json`: Ctrl+Shift+P `open local settings`/`open default settings`;
+5. Find `lsp` section. Inside it paste the following (replace `build` with your build directory name):
 
 ```json
 "clangd": {
