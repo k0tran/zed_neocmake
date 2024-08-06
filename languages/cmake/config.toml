@@ -1,6 +1,6 @@
 name = "CMake"
 grammar = "cmake"
-path_suffixes = ["CMakeLists.txt"]
+path_suffixes = ["CMakeLists.txt", "cmake"]
 line_comments = ["# "]
 autoclose_before = ";:.,=}])"
 brackets = [
