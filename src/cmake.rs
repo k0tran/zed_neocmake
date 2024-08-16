@@ -43,7 +43,12 @@ impl NeoCMakeExt {
                 zed::Os::Windows => "pc-windows-msvc.exe",
             },
             arch = match arch {
-                zed::Architecture::Aarch64 => return Err("unsupported platform aarch64".into()),
+                zed::Architecture::Aarch64 => {
+                    if platform != zed::Os::Mac {
+                        return Err("unsupported platform aarch64".into());
+                    }
+                    "aarch64"
+                },
                 zed::Architecture::X8664 => "x86_64",
                 zed::Architecture::X86 => return Err("unsupported platform x86".into()),
             },
@@ -55,7 +60,7 @@ impl NeoCMakeExt {
             .find(|asset| asset.name == asset_name)
             .ok_or_else(|| format!("no asset found matching {:?}", asset_name))?;
 
-        let binary_path= format!("neocmakelsp-{}", release.version);
+        let binary_path = format!("neocmakelsp-{}", release.version);
 
         if !fs::metadata(&binary_path).map_or(false, |stat| stat.is_file()) {
             zed::set_language_server_installation_status(
@@ -71,7 +76,7 @@ impl NeoCMakeExt {
             .map_err(|e| format!("failed to download file: {e}"))?;
         }
 
-        zed::make_file_executable(&binary_path);
+        zed::make_file_executable(&binary_path)?;
 
         self.cached_binary_path = Some(binary_path.clone());
         Ok(binary_path)
