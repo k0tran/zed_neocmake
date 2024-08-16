@@ -39,7 +39,7 @@ impl NeoCMakeExt {
             "neocmakelsp-{arch}-{os}",
             os = match platform {
                 zed::Os::Mac => "apple-darwin",
-                zed::Os::Linux => "linux-gnu", // Choose GNU by default
+                zed::Os::Linux => "unknown-linux-gnu", // Choose GNU by default
                 zed::Os::Windows => "pc-windows-msvc.exe",
             },
             arch = match arch {
@@ -55,8 +55,7 @@ impl NeoCMakeExt {
             .find(|asset| asset.name == asset_name)
             .ok_or_else(|| format!("no asset found matching {:?}", asset_name))?;
 
-        let version_dir = format!("neocmakelsp-{}", release.version);
-        let binary_path = format!("{version_dir}/bin/neocmakelsp");
+        let binary_path= format!("neocmakelsp-{}", release.version);
 
         if !fs::metadata(&binary_path).map_or(false, |stat| stat.is_file()) {
             zed::set_language_server_installation_status(
@@ -66,20 +65,13 @@ impl NeoCMakeExt {
 
             zed::download_file(
                 &asset.download_url,
-                &version_dir,
+                &binary_path,
                 zed::DownloadedFileType::Uncompressed,
             )
             .map_err(|e| format!("failed to download file: {e}"))?;
-
-            let entries =
-                fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
-            for entry in entries {
-                let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
-                if entry.file_name().to_str() != Some(&version_dir) {
-                    fs::remove_dir_all(&entry.path()).ok();
-                }
-            }
         }
+
+        zed::make_file_executable(&binary_path);
 
         self.cached_binary_path = Some(binary_path.clone());
         Ok(binary_path)
