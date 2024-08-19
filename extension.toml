@@ -1,6 +1,6 @@
 id = "neocmake"
 name = "NeoCMake"
-version = "0.0.4"
+version = "0.0.5"
 schema_version = 1
 authors = ["Sorochan Ilya <sorochanilyav@gmail.com>"]
 description = "CMake grammar and lsp with neocmakelsp"
