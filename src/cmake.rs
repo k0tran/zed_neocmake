@@ -76,6 +76,16 @@ impl NeoCMakeExt {
             .map_err(|e| format!("failed to download file: {e}"))?;
         }
 
+        // Clean up old LSP versions
+        let entries =
+            fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
+            if entry.file_name().to_str() != Some(&binary_path) {
+                fs::remove_dir_all(&entry.path()).ok();
+            }
+        }
+        
         zed::make_file_executable(&binary_path)?;
 
         self.cached_binary_path = Some(binary_path.clone());
