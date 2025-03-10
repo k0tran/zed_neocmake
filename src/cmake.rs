@@ -27,7 +27,7 @@ impl NeoCMakeExt {
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
         let release = zed::latest_github_release(
-            "Decodetalkers/neocmakelsp",
+            "neocmakelsp/neocmakelsp",
             zed::GithubReleaseOptions {
                 require_assets: true,
                 pre_release: false,
@@ -44,11 +44,8 @@ impl NeoCMakeExt {
             },
             arch = match arch {
                 zed::Architecture::Aarch64 => {
-                    if platform != zed::Os::Mac {
-                        return Err("unsupported platform aarch64".into());
-                    }
                     "aarch64"
-                },
+                }
                 zed::Architecture::X8664 => "x86_64",
                 zed::Architecture::X86 => return Err("unsupported platform x86".into()),
             },
@@ -85,7 +82,7 @@ impl NeoCMakeExt {
                 fs::remove_dir_all(&entry.path()).ok();
             }
         }
-        
+
         zed::make_file_executable(&binary_path)?;
 
         self.cached_binary_path = Some(binary_path.clone());
