@@ -12,4 +12,4 @@ language = "CMake"
 
 [grammars.cmake]
 repository = "https://github.com/uyha/tree-sitter-cmake"
-commit = "47564fb0045710aaaa26b4972f4f986297a78280"      # v0.3.0
+commit = "cd00bbcb77fe31283ca79b0038387ec7411759ae"      # v0.6.1

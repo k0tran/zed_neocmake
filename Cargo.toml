@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-zed_extension_api = "0.0.6"
+zed_extension_api = "0.2.0"
 
 [lib]
 path = "src/cmake.rs"
