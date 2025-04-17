@@ -44,7 +44,7 @@ impl NeoCMakeExt {
             },
             arch = match arch {
                 zed::Architecture::Aarch64 => {
-                    if platform != zed::Os::Mac {
+                    if platform == zed::Os::Windows {
                         return Err("unsupported platform aarch64".into());
                     }
                     "aarch64"
