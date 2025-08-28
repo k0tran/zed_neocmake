@@ -78,7 +78,7 @@ Until adding tasks to the extension is possible here are some templates for CMak
     "reveal": "always"
   },
   {
-    "label": "CMake configure Relase",
+    "label": "CMake configure Release",
     "command": "cmake",
     "args": ["-DCMAKE_BUILD_TYPE=Release", "-B", "build/"],
     "env": {},
