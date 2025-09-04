@@ -9,7 +9,7 @@
     "reveal": "always"
   },
   {
-    "label": "CMake configure Relase",
+    "label": "CMake configure Release",
     "command": "cmake",
     "args": ["-DCMAKE_BUILD_TYPE=Release", "-B", "build/"],
     "env": {},
