@@ -20,98 +20,11 @@ For making clangd and cmake work together do the following:
 
 ## CMake tasks
 
-Until adding tasks to the extension is possible here are some templates for CMake project. Note that by default **all tasks use `build` directory**, but you can change it 
+The extension now provides 5 tasks to start with:
+- `CMake configure Debug`
+- `CMake configure Release`
+- `CMake build Debug/Release` - builds what is configured beforehand
+- `CMake configure and build Debug`
+- `CMake configure and build Release`
 
-### Configure
-
-```json
-{
-  "label": "CMake configure Debug",
-  "command": "cmake",
-  "args": ["-DCMAKE_BUILD_TYPE=Debug", "-B", "build/"],
-  "env": {},
-  "use_new_terminal": false,
-  "allow_concurrent_runs": false,
-  "reveal": "always"
-}
-```
-
-### Build
-
-```json
-{
-  "label": "CMake build",
-  "command": "cmake",
-  "args": ["--build", "build"],
-  "env": {},
-  "use_new_terminal": false,
-  "allow_concurrent_runs": false,
-  "reveal": "always"
-}
-```
-
-### Build and configure
-
-```json
-{
-  "label": "CMake configure Debug and build",
-  "command": "cmake -DCMAKE_BUILD_TYPE=Debug -B build/ && cmake --build build/",
-  "args": [],
-  "env": {},
-  "use_new_terminal": false,
-  "allow_concurrent_runs": false,
-  "reveal": "always"
-}
-```
-
-### All together
-
-```json
-[
-  {
-    "label": "CMake configure Debug",
-    "command": "cmake",
-    "args": ["-DCMAKE_BUILD_TYPE=Debug", "-B", "build/"],
-    "env": {},
-    "use_new_terminal": false,
-    "allow_concurrent_runs": false,
-    "reveal": "always"
-  },
-  {
-    "label": "CMake configure Release",
-    "command": "cmake",
-    "args": ["-DCMAKE_BUILD_TYPE=Release", "-B", "build/"],
-    "env": {},
-    "use_new_terminal": false,
-    "allow_concurrent_runs": false,
-    "reveal": "always"
-  },
-  {
-    "label": "CMake build",
-    "command": "cmake",
-    "args": ["--build", "build"],
-    "env": {},
-    "use_new_terminal": false,
-    "allow_concurrent_runs": false,
-    "reveal": "always"
-  },
-  {
-    "label": "CMake configure Debug and build",
-    "command": "cmake -DCMAKE_BUILD_TYPE=Debug -B build/ && cmake --build build/",
-    "args": [],
-    "env": {},
-    "use_new_terminal": false,
-    "allow_concurrent_runs": false,
-    "reveal": "always"
-  },
-  {
-    "label": "CMake configure Release and build",
-    "command": "cmake -DCMAKE_BUILD_TYPE=Release -B build/ && cmake --build build/",
-    "args": [],
-    "env": {},
-    "use_new_terminal": false,
-    "allow_concurrent_runs": false,
-    "reveal": "always"
-  }
-]
-```
+**All tasks use `build` directory for building**
