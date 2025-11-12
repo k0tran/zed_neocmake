@@ -10,7 +10,7 @@ For making clangd and cmake work together do the following:
 1. Add `set(CMAKE_EXPORT_COMPILE_COMMANDS ON)` at the top of the `CMakeLists.txt` (somewhere below `project`);
 2. Configure the CMake project. If everything is correct there should be a `compile_commands.json` file under the build directory.
 4. Go to Zed's `settings.json`: Ctrl+Shift+P `zed: open settings file`;
-5. Create or find the `lsp` section. Inside it, paste the following (replace `build` with your build directory name):
+5. Create or find the `lsp` section. Inside it, paste the following (replace `build` with your build directory):
 
 ```json
 "clangd": {
