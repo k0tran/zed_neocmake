@@ -1,6 +1,6 @@
 # NeoCMake
 
-This is [CMake](https://cmake.org/) extension for [Zed editor](https://zed.dev/). It combines [uyha/tree-sitter-cmake](https://github.com/uyha/tree-sitter-cmake) and [Decodetalkers/neocmakelsp](https://github.com/Decodetalkers/neocmakelsp) (hence why it's "neo").
+This is a [CMake](https://cmake.org/) extension for the [Zed editor](https://zed.dev/). It combines [uyha/tree-sitter-cmake](https://github.com/uyha/tree-sitter-cmake) and [Decodetalkers/neocmakelsp](https://github.com/Decodetalkers/neocmakelsp) (hence why it's "neo").
 The tree-sitter grammar is taken from [helix repo](https://github.com/helix-editor/helix/tree/master/runtime/queries/cmake).
 
 ## C++ LSP support (`compile_commands.json`)
@@ -8,13 +8,16 @@ The tree-sitter grammar is taken from [helix repo](https://github.com/helix-edit
 For making clangd and cmake work together do the following:
 
 1. Add `set(CMAKE_EXPORT_COMPILE_COMMANDS ON)` at the top of the `CMakeLists.txt` (somewhere below `project`);
-2. Reconfigure cmake project. If everything is correct there should be `compile_commands.json` file under build directory. I also advise using `CXX=clang` for better compatibility with clangd;
-3. Go to Zed's `settings.json`: Ctrl+Shift+P `open local settings`/`open default settings`;
-5. Find `lsp` section. Inside it paste the following (replace `build` with your build directory name):
+2. Configure the CMake project. If everything is correct there should be a `compile_commands.json` file under the build directory.
+4. Go to Zed's `settings.json`: Ctrl+Shift+P `zed: open settings file`;
+5. Create or find the `lsp` section. Inside it, paste the following (replace `build` with your build directory name):
 
 ```json
 "clangd": {
-    "arguments": ["-background-index", "-compile-commands-dir=build"]
+  "binary": {
+    "path": "clangd",
+    "arguments": ["--background-index", "--compile-commands-dir=build"]
+  }
 }
 ```
 
