@@ -35,24 +35,31 @@ impl NeoCMakeExt {
         )?;
 
         let (platform, arch) = zed::current_platform();
-        let asset_name = format!(
-            "neocmakelsp-{arch}-{os}",
-            os = match platform {
-                zed::Os::Mac => "apple-darwin",
-                zed::Os::Linux => "unknown-linux-gnu", // Choose GNU by default
-                zed::Os::Windows => "pc-windows-msvc.exe",
-            },
-            arch = match arch {
-                zed::Architecture::Aarch64 => {
-                    if platform == zed::Os::Windows {
-                        return Err("unsupported platform aarch64".into());
-                    }
-                    "aarch64"
-                },
-                zed::Architecture::X8664 => "x86_64",
-                zed::Architecture::X86 => return Err("unsupported platform x86".into()),
-            },
-        );
+        let asset_name = match (platform, arch) {
+            (zed::Os::Mac, _) => "neocmakelsp-universal-apple-darwin.tar.gz",
+            (zed::Os::Windows, zed::Architecture::Aarch64) => {
+                "neocmakelsp-aarch64-pc-windows-msvc.zip"
+            }
+            (zed::Os::Windows, zed::Architecture::X8664) => {
+                "neocmakelsp-x86_64-pc-windows-msvc.zip"
+            }
+            (zed::Os::Linux, zed::Architecture::Aarch64) => {
+                "neocmakelsp-aarch64-unknown-linux-gnu.tar.gz"
+            }
+            (zed::Os::Linux, zed::Architecture::X8664) => {
+                "neocmakelsp-x86_64-unknown-linux-gnu.tar.gz"
+            }
+            _ => {
+                return Err(format!(
+                    "Unsupported platform-arch combination: {:?} {:?}",
+                    platform, arch
+                ))
+            }
+        };
+        let asset_type = match platform {
+            zed::Os::Mac | zed::Os::Linux => zed::DownloadedFileType::GzipTar,
+            zed::Os::Windows => zed::DownloadedFileType::Zip,
+        };
 
         let asset = release
             .assets
@@ -60,7 +67,14 @@ impl NeoCMakeExt {
             .find(|asset| asset.name == asset_name)
             .ok_or_else(|| format!("no asset found matching {:?}", asset_name))?;
 
-        let binary_path = format!("neocmakelsp-{}", release.version);
+        let version_dir = format!("neocmakelsp-{}", release.version);
+        let binary_path = format!(
+            "{version_dir}/neocmakelsp{}",
+            match platform {
+                zed::Os::Mac | zed::Os::Linux => "",
+                zed::Os::Windows => ".exe",
+            }
+        );
 
         if !fs::metadata(&binary_path).map_or(false, |stat| stat.is_file()) {
             zed::set_language_server_installation_status(
@@ -68,25 +82,21 @@ impl NeoCMakeExt {
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
 
-            zed::download_file(
-                &asset.download_url,
-                &binary_path,
-                zed::DownloadedFileType::Uncompressed,
-            )
-            .map_err(|e| format!("failed to download file: {e}"))?;
-        }
+            zed::download_file(&asset.download_url, &version_dir, asset_type)
+                .map_err(|e| format!("failed to download file: {e}"))?;
 
-        // Clean up old LSP versions
-        let entries =
-            fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
-        for entry in entries {
-            let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
-            if entry.file_name().to_str() != Some(&binary_path) {
-                fs::remove_dir_all(&entry.path()).ok();
+            zed::make_file_executable(&binary_path)?;
+
+            // Remove old versions
+            let entries =
+                fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
+            for entry in entries {
+                let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
+                if entry.file_name().to_str() != Some(&version_dir) {
+                    fs::remove_dir_all(entry.path()).ok();
+                }
             }
         }
-        
-        zed::make_file_executable(&binary_path)?;
 
         self.cached_binary_path = Some(binary_path.clone());
         Ok(binary_path)
