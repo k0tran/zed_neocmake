@@ -2,12 +2,12 @@
   {
     "label": "CMake configure Debug",
     "command": "cmake",
-    "args": ["-DCMAKE_BUILD_TYPE=Debug", "-B", "./build"],
+    "args": ["-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-B", "./build"],
   },
   {
     "label": "CMake configure Release",
     "command": "cmake",
-    "args": ["-DCMAKE_BUILD_TYPE=Release", "-B", "./build"],
+    "args": ["-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-B", "./build"],
   },
   {
     "label": "CMake build Debug/Release",
@@ -16,10 +16,10 @@
   },
   {
     "label": "CMake configure and build Debug",
-    "command": "cmake -DCMAKE_BUILD_TYPE=Debug -B ./build && cmake --build ./build",
+    "command": "cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B ./build && cmake --build ./build",
   },
   {
     "label": "CMake configure and build Release",
-    "command": "cmake -DCMAKE_BUILD_TYPE=Release -B ./build && cmake --build ./build",
+    "command": "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B ./build && cmake --build ./build",
   }
 ]
