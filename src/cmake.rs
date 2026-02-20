@@ -22,19 +22,58 @@ impl NeoCMakeExt {
             }
         }
 
+        let (platform, arch) = zed::current_platform();
+        let exe_suffix = match platform {
+            zed::Os::Windows => ".exe",
+            _ => "",
+        };
+
         zed::set_language_server_installation_status(
             &language_server_id,
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
+
         let release = zed::latest_github_release(
             "neocmakelsp/neocmakelsp",
             zed::GithubReleaseOptions {
                 require_assets: true,
                 pre_release: false,
             },
-        )?;
+        );
 
-        let (platform, arch) = zed::current_platform();
+        let release = match release {
+            Ok(release) => release,
+            Err(e) => {
+                eprintln!("neocmakelsp: GitHub unreachable ({e}), looking for cached binary");
+                return {
+                    let dir = fs::read_dir(".")
+                        .map_err(|err| {
+                            format!("GitHub unreachable ({e}) and failed to list directory: {err}")
+                        })?
+                        .flatten()
+                        .map(|e| e.path())
+                        .find(|p| {
+                            p.is_dir()
+                                && p.file_name()
+                                    .and_then(|n| n.to_str())
+                                    .map_or(false, |n| n.starts_with("neocmakelsp-"))
+                        })
+                        .ok_or_else(|| {
+                            format!("GitHub unreachable and no cached directory found: {e}")
+                        })?;
+
+                    let binary = dir.join(format!("neocmakelsp{exe_suffix}"));
+                    if fs::metadata(&binary).map_or(false, |m| m.is_file()) {
+                        let path = binary.to_string_lossy().to_string();
+                        self.cached_binary_path = Some(path.clone());
+                        Ok(path)
+                    } else {
+                        Err(format!("Cached directory found but binary missing: {e}"))
+                    }
+                };
+            }
+        };
+
         let asset_name = match (platform, arch) {
             (zed::Os::Mac, _) => "neocmakelsp-universal-apple-darwin.tar.gz",
             (zed::Os::Windows, zed::Architecture::Aarch64) => {
@@ -68,13 +107,7 @@ impl NeoCMakeExt {
             .ok_or_else(|| format!("no asset found matching {:?}", asset_name))?;
 
         let version_dir = format!("neocmakelsp-{}", release.version);
-        let binary_path = format!(
-            "{version_dir}/neocmakelsp{}",
-            match platform {
-                zed::Os::Mac | zed::Os::Linux => "",
-                zed::Os::Windows => ".exe",
-            }
-        );
+        let binary_path = format!("{version_dir}/neocmakelsp{exe_suffix}"); // Line 65 moment
 
         if !fs::metadata(&binary_path).map_or(false, |stat| stat.is_file()) {
             zed::set_language_server_installation_status(
