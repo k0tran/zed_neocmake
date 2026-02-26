@@ -1,6 +1,6 @@
 use std::fs;
 use zed::LanguageServerId;
-use zed_extension_api::{self as zed, Result};
+use zed_extension_api::{self as zed, serde_json, Result};
 
 struct NeoCMakeExt {
     cached_binary_path: Option<String>,
@@ -19,6 +19,26 @@ impl NeoCMakeExt {
         if let Some(path) = &self.cached_binary_path {
             if fs::metadata(path).map_or(false, |stat| stat.is_file()) {
                 return Ok(path.clone());
+            }
+        }
+
+        let (platform, _) = zed::current_platform();
+        let binary_suffix = match platform {
+            zed::Os::Windows => ".exe",
+            _ => "",
+        };
+
+        if let Ok(entries) = fs::read_dir(".") {
+            for entry in entries.flatten() {
+                let name = entry.file_name();
+                let name_str = name.to_string_lossy();
+                if name_str.starts_with("neocmakelsp-") {
+                    let candidate = format!("{}/neocmakelsp{}", name_str, binary_suffix);
+                    if fs::metadata(&candidate).map_or(false, |stat| stat.is_file()) {
+                        self.cached_binary_path = Some(candidate.clone());
+                        return Ok(candidate);
+                    }
+                }
             }
         }
 
@@ -87,7 +107,6 @@ impl NeoCMakeExt {
 
             zed::make_file_executable(&binary_path)?;
 
-            // Remove old versions
             let entries =
                 fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
             for entry in entries {
@@ -120,6 +139,19 @@ impl zed::Extension for NeoCMakeExt {
             args: vec![String::from("stdio")],
             env: Default::default(),
         })
+    }
+
+    fn language_server_initialization_options(
+        &mut self,
+        _language_server_id: &LanguageServerId,
+        _worktree: &zed::Worktree,
+    ) -> Result<Option<serde_json::Value>> {
+        Ok(Some(serde_json::json!({
+            "format": { "enable": true },
+            "lint": { "enable": true },
+            "scan_cmake_in_package": false,
+            "semantic_token": false
+        })))
     }
 }
 
