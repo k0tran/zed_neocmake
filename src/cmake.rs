@@ -1,6 +1,6 @@
 use std::fs;
 use zed::LanguageServerId;
-use zed_extension_api::{self as zed, Result};
+use zed_extension_api::{self as zed, serde_json, Result};
 
 struct NeoCMakeExt {
     cached_binary_path: Option<String>,
@@ -120,6 +120,19 @@ impl zed::Extension for NeoCMakeExt {
             args: vec![String::from("stdio")],
             env: Default::default(),
         })
+    }
+
+    fn language_server_initialization_options(
+        &mut self,
+        _language_server_id: &LanguageServerId,
+        _worktree: &zed::Worktree,
+    ) -> Result<Option<serde_json::Value>> {
+        Ok(Some(serde_json::json!({
+            "format": { "enable": true },
+            "lint": { "enable": true },
+            "scan_cmake_in_package": false,
+            "semantic_token": false
+        })))
     }
 }
 
