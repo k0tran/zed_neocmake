@@ -1,6 +1,6 @@
 # NeoCMake
 
-This is [CMake](https://cmake.org/) extension for [Zed editor](https://zed.dev/). It combines [uyha/tree-sitter-cmake](https://github.com/uyha/tree-sitter-cmake) and [Decodetalkers/neocmakelsp](https://github.com/Decodetalkers/neocmakelsp) (hence why it's "neo").
+This is [CMake](https://cmake.org/) extension for [Zed editor](https://zed.dev/). It combines [uyha/tree-sitter-cmake](https://github.com/uyha/tree-sitter-cmake) and [neocmakelsp/neocmakelsp](https://github.com/neocmakelsp/neocmakelsp) (hence why it's "neo").
 The tree-sitter grammar is taken from [helix repo](https://github.com/helix-editor/helix/tree/master/runtime/queries/cmake).
 
 ## C++ LSP support (`compile_commands.json`)

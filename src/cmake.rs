@@ -27,7 +27,7 @@ impl NeoCMakeExt {
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
         let release = zed::latest_github_release(
-            "Decodetalkers/neocmakelsp",
+            "neocmakelsp/neocmakelsp",
             zed::GithubReleaseOptions {
                 require_assets: true,
                 pre_release: false,
