@@ -38,11 +38,7 @@ impl NeoCMakeExt {
         }
     }
 
-    fn language_server_binary_path(
-        &mut self,
-        language_server_id: &LanguageServerId,
-        worktree: &zed::Worktree,
-    ) -> Result<String> {
+    fn update_binary_path(&mut self, language_server_id: &LanguageServerId) -> Option<String> {
         zed::set_language_server_installation_status(
             language_server_id,
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
@@ -94,7 +90,7 @@ impl NeoCMakeExt {
         }
 
         self.cached_binary_path = Some(binary_path.clone());
-        Ok(binary_path)
+        Some(binary_path)
     }
 }
 
@@ -113,15 +109,10 @@ impl zed::Extension for NeoCMakeExt {
         if let Some(binary) = worktree
             .which(NeoCMakeExt::binary_name())
             .or_else(|| self.cached_binary_path.clone())
+            .or_else(|| self.update_binary_path())
         {
             Ok(zed::Command {
                 command: binary,
-                args: vec![String::from("stdio")],
-                env: Default::default(),
-            })
-        } else {
-            Ok(zed::Command {
-                command: self.language_server_binary_path(language_server_id, worktree)?,
                 args: vec![String::from("stdio")],
                 env: Default::default(),
             })
