@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::fs;
 use zed::LanguageServerId;
 use zed_extension_api::{self as zed, serde_json, Result};
@@ -81,7 +82,7 @@ impl NeoCMakeExt {
 
         zed::set_language_server_installation_status(
             language_server_id,
-            &zed::LanguageServerInstallationStatus::None
+            &zed::LanguageServerInstallationStatus::None,
         );
 
         Ok(binary_path)
@@ -100,27 +101,52 @@ impl NeoCMakeExt {
         Ok(())
     }
 
+    fn clean_pop() -> Result<String> {
+        let mut entries: Vec<OsString> = fs::read_dir(".")
+            .map_err(|e| format!("Failed to list working directory: {e}"))?
+            .filter_map(|e| e.ok())
+            .map(|e| e.file_name())
+            .collect();
+
+        entries.sort();
+
+        let newest = entries
+            .pop()
+            .and_then(|e| e.into_string().ok())
+            .ok_or("No versions found")?;
+
+        entries.iter().for_each(|e| {
+            fs::remove_dir_all(e).ok();
+        });
+
+        Ok(format!("{newest}/{}", NeoCMakeExt::binary_name()))
+    }
+
     fn update_binary_path(&mut self, language_server_id: &LanguageServerId) -> Option<String> {
         let binary_path = match NeoCMakeExt::latest_release(language_server_id) {
             Ok(binary_path) => {
-                NeoCMakeExt::clean(binary_path.as_str()).map_err(|e| println!("{e}", e));
+                NeoCMakeExt::clean(binary_path.as_str()).map_err(|e| println!("{}", e));
                 Some(binary_path)
-            },
-            Err(e) => println("{e}", e),
-        };
-            // Remove old versions
-            let entries =
-                fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
-            for entry in entries {
-                let entry = entry.map_err(|e| format!("failed to load directory entry {e}"))?;
-                if entry.file_name().to_str() != Some(&version_dir) {
-                    fs::remove_dir_all(entry.path()).ok();
+            }
+            Err(e) => {
+                println!("{}", e);
+                match NeoCMakeExt::clean_pop() {
+                    Ok(binary_path) => Some(binary_path),
+                    Err(e) => {
+                        println!("{}", e);
+                        zed::set_language_server_installation_status(
+                            language_server_id,
+                            &zed::LanguageServerInstallationStatus::Failed(
+                                "Could not update binary path. See logs for more info".to_string(),
+                            ),
+                        );
+                        None
+                    }
                 }
             }
-        }
-
-        self.cached_binary_path = Some(binary_path.clone());
-        Some(binary_path)
+        };
+        self.cached_binary_path = binary_path.clone();
+        return binary_path;
     }
 }
 
