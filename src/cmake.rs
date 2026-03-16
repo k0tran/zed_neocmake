@@ -87,9 +87,25 @@ impl NeoCMakeExt {
         Ok(binary_path)
     }
 
+    fn clean(keep: &str) -> Result<()> {
+        let keep_dir = keep.split('/').next().ok_or("Failed to split keep path")?;
+        let entries =
+            fs::read_dir(".").map_err(|e| format!("Failed to list working directory {e}"))?;
+        for entry in entries {
+            let entry = entry.map_err(|e| format!("Failed to load directory entry {e}"))?;
+            if entry.file_name().to_str() != Some(&keep_dir) {
+                fs::remove_dir_all(entry.path()).ok();
+            }
+        }
+        Ok(())
+    }
+
     fn update_binary_path(&mut self, language_server_id: &LanguageServerId) -> Option<String> {
         let binary_path = match NeoCMakeExt::latest_release(language_server_id) {
-            Ok(binary_path) => binary_path,
+            Ok(binary_path) => {
+                NeoCMakeExt::clean(binary_path.as_str()).map_err(|e| println!("{e}", e));
+                Some(binary_path)
+            },
             Err(e) => println("{e}", e),
         };
             // Remove old versions
