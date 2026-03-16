@@ -12,8 +12,10 @@ Example:
 5. Inside `lsp` section past the following (replace `build` with your build directory name):
 ```json
 "clangd": {
-    "arguments": ["-background-index", "-compile-commands-dir=build"]
-}
+  "binary": {
+    "arguments": ["-compile-commands-dir=build"],
+  },
+},
 ```
 
 ## Tasks
