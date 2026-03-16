@@ -9,7 +9,7 @@ Example:
 1. Add `set(CMAKE_EXPORT_COMPILE_COMMANDS ON)` to the `CMakeLists.txt`, somewhere below `project`;
 2. Reconfigure. If everything is correct there should be `compile_commands.json` file under build directory. It is also advised to use `CXX=clang` for clangd better compatibility;
 3. Go to Zed's `settings.json` (Ctrl+Shift+P `open local settings`/`open default settings`);
-5. Inside `lsp` section past the following (replace `build` with your build directory name):
+5. Inside `lsp` section paste the following (replace `build` with your build directory name):
 ```json
 "clangd": {
   "binary": {
