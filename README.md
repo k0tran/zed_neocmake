@@ -1,30 +1,26 @@
 # NeoCMake
 
 This is [CMake](https://cmake.org/) extension for [Zed editor](https://zed.dev/). It combines [uyha/tree-sitter-cmake](https://github.com/uyha/tree-sitter-cmake) and [neocmakelsp/neocmakelsp](https://github.com/neocmakelsp/neocmakelsp) (hence why it's "neo").
-The tree-sitter grammar is taken from [helix repo](https://github.com/helix-editor/helix/tree/master/runtime/queries/cmake).
 
 ## C++ LSP support (`compile_commands.json`)
 
-For making clangd and cmake work together do the following:
-
-1. Add `set(CMAKE_EXPORT_COMPILE_COMMANDS ON)` at the top of the `CMakeLists.txt` (somewhere below `project`);
-2. Reconfigure cmake project. If everything is correct there should be `compile_commands.json` file under build directory. I also advise using `CXX=clang` for better compatibility with clangd;
-3. Go to Zed's `settings.json`: Ctrl+Shift+P `open local settings`/`open default settings`;
-5. Find `lsp` section. Inside it paste the following (replace `build` with your build directory name):
-
+For that you need to tell cmake to export compile commands.
+Example:
+1. Add `set(CMAKE_EXPORT_COMPILE_COMMANDS ON)` to the `CMakeLists.txt`, somewhere below `project`;
+2. Reconfigure. If everything is correct there should be `compile_commands.json` file under build directory. It is also advised to use `CXX=clang` for clangd better compatibility;
+3. Go to Zed's `settings.json` (Ctrl+Shift+P `open local settings`/`open default settings`);
+5. Inside `lsp` section past the following (replace `build` with your build directory name):
 ```json
 "clangd": {
     "arguments": ["-background-index", "-compile-commands-dir=build"]
 }
 ```
 
-## CMake tasks
+## Tasks
 
-The extension now provides 5 tasks to start with:
-- `CMake configure Debug`
-- `CMake configure Release`
-- `CMake build Debug/Release` - builds what is configured beforehand
-- `CMake configure and build Debug`
-- `CMake configure and build Release`
+This extension should atomatically create tasks from files.
+If you want to use `CMakePresets.json` or `CMakeUserPresets.json` this can be done in tasks menu. Just type `cmake --preset <your-preset-name>` and hit enter.
 
-**All tasks use `build` directory for building**
+## Bugs, suggestions, features
+
+Hi! If you encountered a bug or want to contribute - look up existing issues or create one. Note that I sometimes it'll take a bit for me to answer, but I'll try best to maintain this project. Thanks!
