@@ -125,7 +125,7 @@ impl NeoCMakeExt {
     fn update_binary_path(&mut self, language_server_id: &LanguageServerId) -> Option<String> {
         let binary_path = match NeoCMakeExt::latest_release(language_server_id) {
             Ok(binary_path) => {
-                NeoCMakeExt::clean(binary_path.as_str()).map_err(|e| println!("{}", e));
+                _ = NeoCMakeExt::clean(binary_path.as_str()).map_err(|e| println!("{}", e));
                 Some(binary_path)
             }
             Err(e) => {
@@ -165,13 +165,15 @@ impl zed::Extension for NeoCMakeExt {
         if let Some(binary) = worktree
             .which(NeoCMakeExt::binary_name())
             .or_else(|| self.cached_binary_path.clone())
-            .or_else(|| self.update_binary_path())
+            .or_else(|| self.update_binary_path(language_server_id))
         {
             Ok(zed::Command {
                 command: binary,
                 args: vec![String::from("stdio")],
                 env: Default::default(),
             })
+        } else {
+            Err("Could not update binary path. See logs for more info".to_string())
         }
     }
 
