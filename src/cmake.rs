@@ -38,6 +38,14 @@ impl NeoCMakeExt {
         }
     }
 
+    fn asset_type() -> zed::DownloadedFileType {
+        let (platform, _) = zed::current_platform();
+        match platform {
+            zed::Os::Mac | zed::Os::Linux => zed::DownloadedFileType::GzipTar,
+            zed::Os::Windows => zed::DownloadedFileType::Zip,
+        }
+    }
+
     fn update_binary_path(&mut self, language_server_id: &LanguageServerId) -> Option<String> {
         zed::set_language_server_installation_status(
             language_server_id,
@@ -69,10 +77,6 @@ impl NeoCMakeExt {
             );
 
             let (platform, _) = zed::current_platform();
-            let asset_type = match platform {
-                zed::Os::Mac | zed::Os::Linux => zed::DownloadedFileType::GzipTar,
-                zed::Os::Windows => zed::DownloadedFileType::Zip,
-            };
             zed::download_file(&asset.download_url, &version_dir, asset_type)
                 .map_err(|e| format!("failed to download file: {e}"))?;
 
