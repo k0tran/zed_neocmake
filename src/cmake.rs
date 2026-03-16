@@ -15,6 +15,29 @@ impl NeoCMakeExt {
         }
     }
 
+    fn asset_name() -> Result<&'static str> {
+        let (platform, arch) = zed::current_platform();
+        match (platform, arch) {
+            (zed::Os::Mac, _) => Ok("neocmakelsp-universal-apple-darwin.tar.gz"),
+            (zed::Os::Windows, zed::Architecture::Aarch64) => {
+                Ok("neocmakelsp-aarch64-pc-windows-msvc.zip")
+            }
+            (zed::Os::Windows, zed::Architecture::X8664) => {
+                Ok("neocmakelsp-x86_64-pc-windows-msvc.zip")
+            }
+            (zed::Os::Linux, zed::Architecture::Aarch64) => {
+                Ok("neocmakelsp-aarch64-unknown-linux-gnu.tar.gz")
+            }
+            (zed::Os::Linux, zed::Architecture::X8664) => {
+                Ok("neocmakelsp-x86_64-unknown-linux-gnu.tar.gz")
+            }
+            _ => Err(format!(
+                "Unsupported platform-arch combination: {:?} {:?}",
+                platform, arch
+            )),
+        }
+    }
+
     fn language_server_binary_path(
         &mut self,
         language_server_id: &LanguageServerId,
@@ -32,32 +55,7 @@ impl NeoCMakeExt {
             },
         )?;
 
-        let (platform, arch) = zed::current_platform();
-        let asset_name = match (platform, arch) {
-            (zed::Os::Mac, _) => "neocmakelsp-universal-apple-darwin.tar.gz",
-            (zed::Os::Windows, zed::Architecture::Aarch64) => {
-                "neocmakelsp-aarch64-pc-windows-msvc.zip"
-            }
-            (zed::Os::Windows, zed::Architecture::X8664) => {
-                "neocmakelsp-x86_64-pc-windows-msvc.zip"
-            }
-            (zed::Os::Linux, zed::Architecture::Aarch64) => {
-                "neocmakelsp-aarch64-unknown-linux-gnu.tar.gz"
-            }
-            (zed::Os::Linux, zed::Architecture::X8664) => {
-                "neocmakelsp-x86_64-unknown-linux-gnu.tar.gz"
-            }
-            _ => {
-                return Err(format!(
-                    "Unsupported platform-arch combination: {:?} {:?}",
-                    platform, arch
-                ))
-            }
-        };
-        let asset_type = match platform {
-            zed::Os::Mac | zed::Os::Linux => zed::DownloadedFileType::GzipTar,
-            zed::Os::Windows => zed::DownloadedFileType::Zip,
-        };
+        let asset_name = NeoCMakeExt::asset_name()?;
 
         let asset = release
             .assets
@@ -66,13 +64,7 @@ impl NeoCMakeExt {
             .ok_or_else(|| format!("no asset found matching {:?}", asset_name))?;
 
         let version_dir = format!("neocmakelsp-{}", release.version);
-        let binary_path = format!(
-            "{version_dir}/neocmakelsp{}",
-            match platform {
-                zed::Os::Mac | zed::Os::Linux => "",
-                zed::Os::Windows => ".exe",
-            }
-        );
+        let binary_path = format!("{version_dir}/{}", NeoCMakeExt::binary_name());
 
         if !fs::metadata(&binary_path).map_or(false, |stat| stat.is_file()) {
             zed::set_language_server_installation_status(
@@ -80,6 +72,11 @@ impl NeoCMakeExt {
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
 
+            let (platform, _) = zed::current_platform();
+            let asset_type = match platform {
+                zed::Os::Mac | zed::Os::Linux => zed::DownloadedFileType::GzipTar,
+                zed::Os::Windows => zed::DownloadedFileType::Zip,
+            };
             zed::download_file(&asset.download_url, &version_dir, asset_type)
                 .map_err(|e| format!("failed to download file: {e}"))?;
 
