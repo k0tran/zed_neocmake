@@ -7,15 +7,19 @@ struct NeoCMakeExt {
 }
 
 impl NeoCMakeExt {
+    fn binary_name() -> &'static str {
+        let (platform, _) = zed::current_platform();
+        match platform {
+            zed::Os::Linux | zed::Os::Mac => "neocmakelsp",
+            zed::Os::Windows => "neocmakelsp.exe",
+        }
+    }
+
     fn language_server_binary_path(
         &mut self,
         language_server_id: &LanguageServerId,
         worktree: &zed::Worktree,
     ) -> Result<String> {
-        if let Some(path) = worktree.which("neocmakelsp") {
-            return Ok(path);
-        }
-
         if let Some(path) = &self.cached_binary_path {
             if fs::metadata(path).map_or(false, |stat| stat.is_file()) {
                 return Ok(path.clone());
@@ -115,11 +119,19 @@ impl zed::Extension for NeoCMakeExt {
         language_server_id: &LanguageServerId,
         worktree: &zed::Worktree,
     ) -> Result<zed::Command> {
-        Ok(zed::Command {
-            command: self.language_server_binary_path(language_server_id, worktree)?,
-            args: vec![String::from("stdio")],
-            env: Default::default(),
-        })
+        if let Some(binary) = worktree.which(NeoCMakeExt::binary_name()) {
+            Ok(zed::Command {
+                command: binary,
+                args: vec![String::from("stdio")],
+                env: Default::default(),
+            })
+        } else {
+            Ok(zed::Command {
+                command: self.language_server_binary_path(language_server_id, worktree)?,
+                args: vec![String::from("stdio")],
+                env: Default::default(),
+            })
+        }
     }
 
     fn language_server_initialization_options(
