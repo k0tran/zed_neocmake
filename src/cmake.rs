@@ -46,11 +46,12 @@ impl NeoCMakeExt {
         }
     }
 
-    fn update_binary_path(&mut self, language_server_id: &LanguageServerId) -> Option<String> {
+    fn latest_release(language_server_id: &LanguageServerId) -> Result<String> {
         zed::set_language_server_installation_status(
             language_server_id,
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
+
         let release = zed::latest_github_release(
             "neocmakelsp/neocmakelsp",
             zed::GithubReleaseOptions {
@@ -58,30 +59,39 @@ impl NeoCMakeExt {
                 pre_release: false,
             },
         )?;
-
         let asset_name = NeoCMakeExt::asset_name()?;
-
         let asset = release
             .assets
             .iter()
             .find(|asset| asset.name == asset_name)
-            .ok_or_else(|| format!("no asset found matching {:?}", asset_name))?;
+            .ok_or_else(|| format!("No asset found matching {:?}", asset_name))?;
 
         let version_dir = format!("neocmakelsp-{}", release.version);
         let binary_path = format!("{version_dir}/{}", NeoCMakeExt::binary_name());
-
         if !fs::metadata(&binary_path).map_or(false, |stat| stat.is_file()) {
             zed::set_language_server_installation_status(
                 language_server_id,
                 &zed::LanguageServerInstallationStatus::Downloading,
             );
 
-            let (platform, _) = zed::current_platform();
-            zed::download_file(&asset.download_url, &version_dir, asset_type)
-                .map_err(|e| format!("failed to download file: {e}"))?;
-
+            zed::download_file(&asset.download_url, &version_dir, NeoCMakeExt::asset_type())
+                .map_err(|e| format!("Failed to download file: {e}"))?;
             zed::make_file_executable(&binary_path)?;
+        }
 
+        zed::set_language_server_installation_status(
+            language_server_id,
+            &zed::LanguageServerInstallationStatus::None
+        );
+
+        Ok(binary_path)
+    }
+
+    fn update_binary_path(&mut self, language_server_id: &LanguageServerId) -> Option<String> {
+        let binary_path = match NeoCMakeExt::latest_release(language_server_id) {
+            Ok(binary_path) => binary_path,
+            Err(e) => println("{e}", e),
+        };
             // Remove old versions
             let entries =
                 fs::read_dir(".").map_err(|e| format!("failed to list working directory {e}"))?;
